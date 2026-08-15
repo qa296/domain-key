@@ -1,33 +1,40 @@
+<div align="center">
+
 # domain-key
 
-根据域名 + 密码种子，自动生成高强度唯一密码的 Tampermonkey / Violentmonkey 用户脚本。
 
-## 工作原理
+##### **Automatically** generate a [strong]() and **unique** password from domain + your seed.
 
-脚本将 **域名主体** + **你设定的密码种子** 拼接后经 SHA-384 哈希，再通过拒绝采样和 Fisher-Yates 洗牌，生成 12 位包含大小写字母、数字、特殊字符的密码。同一网站 + 同一种子 = 同一密码，无需记忆也无需存储。
+</div>
 
-## 安装
+[中文文档](README.zh-CN.md)
 
-1. 安装 [Tampermonkey](https://www.tampermonkey.net/) 或 [Violentmonkey](https://violentmonkey.github.io/) 浏览器扩展
-2. 点击 [安装链接](https://github.com/qa296/domain-key/raw/main/domain-key.user.js) 或手动将 `domain-key.user.js` 内容添加到脚本管理器
-3. 启用脚本，访问任意网站即可使用
+## How It Works
 
-## 使用方法
+The script concatenates **main domain part** + **your secret seed**, hashes with SHA-384, then generates a 12-character password containing uppercase, lowercase, digits, and special characters using rejection sampling and Fisher-Yates shuffle. Same website + same seed = same password — no memorization or storage required.
 
-### 基本用法
+## Installation
 
-1. 访问任意网站的注册/登录页面
-2. 聚焦密码输入框，右侧出现 🔑 按钮
-3. 点击按钮 → 密码自动填入并复制到剪贴板
+1. Install [Tampermonkey](https://www.tampermonkey.net/) or [Violentmonkey](https://violentmonkey.github.io/) browser extension
+2. Click [install link](https://github.com/qa296/domain-key/raw/main/domain-key.user.js) or manually add `domain-key.user.js` content to your script manager
+3. Enable the script and visit any website to start using
 
-### 首次使用
+## Usage
 
-点击 🔑 按钮后会弹出种子设置对话框，输入至少 6 个字符的密码种子。也可通过 Tampermonkey 菜单 → "设置密码种子" 随时修改。
+### Basic Usage
 
-### 账号后缀
+1. Visit any website's registration/login page
+2. Focus on a password input field — a 🔑 button appears on the right
+3. Click the button → password is automatically filled and copied to clipboard
 
-**Shift + 点击** 🔑 按钮，弹出后缀输入框。为同一域名的不同账号添加修饰符（如 `work`、`personal`），脚本会生成不同密码。
+### First Time Use
 
-## 贡献
+Clicking the 🔑 button opens a seed setup dialog. Enter at least 6 characters for your secret seed. You can also modify it anytime via Tampermonkey menu → "设置密码种子" (Set Password Seed).
 
-欢迎提交 Issue 和 Pull Request。
+### Account Suffix
+
+**Shift + click** the 🔑 button to open the suffix input dialog. Add modifiers (like `work`, `personal`) for different accounts on the same domain, and the script will generate different passwords.
+
+## Contributing
+
+Issues and Pull Requests are welcome.
