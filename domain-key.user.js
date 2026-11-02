@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name          domain-key
 // @namespace     https://github.com/qa296/domain-key
-// @version       1.0.0
+// @version       1.0.1
 // @description   根据域名 + 密码种子，自动生成高强度唯一密码
 // @description:en Generate strong unique passwords based on domain + your secret seed
 // @author        qa296
@@ -418,7 +418,9 @@ const detectedHint =
   function escapeHtml(str) {
     const div = document.createElement("div");
     div.textContent = str;
-    return div.innerHTML;
+    return div.innerHTML
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
   }
 
   // 注册 Tampermonkey 菜单
