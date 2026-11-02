@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name          domain-key
 // @namespace     https://github.com/qa296/domain-key
-// @version       1.0.1
+// @version       1.1.1
 // @description   根据域名 + 密码种子，自动生成高强度唯一密码
 // @description:en Generate strong unique passwords based on domain + your secret seed
 // @author        qa296
@@ -52,14 +52,27 @@
     return mainPart.toLowerCase();
   }
 
-  // 密码生成 SHA-384 + 强制4类字符 + 拒绝采样 + Fisher-Yates
+  // 密码生成 PBKDF2拉伸(seed→PRK) + HKDF派生(→64B) + 强制4类字符 + 拒绝采样 + Fisher-Yates
   async function generatePassword(domainKey, seed, suffix = "") {
-    const input = `${domainKey}:${seed}${suffix ? ":" + suffix : ""}`;
     const encoder = new TextEncoder();
-    const data = encoder.encode(input);
 
-    const hashBuffer = await crypto.subtle.digest("SHA-384", data);
-    const hashArray = new Uint8Array(hashBuffer);
+    // 拉伸:PBKDF2-SHA512,10万次迭代,salt = domainKey → 256bit PRK
+    const baseKey = await crypto.subtle.importKey(
+      "raw", encoder.encode(seed), "PBKDF2", false, ["deriveBits"]
+    );
+    const prk = await crypto.subtle.deriveBits(
+      { name: "PBKDF2", hash: "SHA-512", salt: encoder.encode(domainKey), iterations: 100000 },
+      baseKey, 256
+    );
+
+    // 派生:HKDF-SHA512,salt/domainKey + info/suffix 结构化传参,无字符串拼接 → 512bit 密钥流
+    const hkKey = await crypto.subtle.importKey("raw", prk, "HKDF", false, ["deriveBits"]);
+    const stream = await crypto.subtle.deriveBits(
+      { name: "HKDF", hash: "SHA-512", salt: encoder.encode(domainKey), info: encoder.encode(suffix) },
+      hkKey, 512
+    );
+
+    const hashArray = new Uint8Array(stream);
     let offset = 0;
 
     function nextByte() {
@@ -153,11 +166,16 @@ const detectedHint =
         <p style="margin:0 0 10px 0; color:#666; font-size:12px;">
           添加后缀区分同站多账号，留空则使用默认生成。
         </p>
-        <input id="dpg-suffix-input" type="text"
-          style="width:100%; box-sizing:border-box; padding:6px 8px; font-size:13px;
-                 border:1px solid #ccc; border-radius:3px; outline:none; font-family:inherit;"
-          placeholder="如：work"
-          value="${escapeHtml(defaultValue)}">
+        <div style="display:flex; gap:6px; align-items:center;">
+          <input id="dpg-suffix-input" type="password"
+            style="flex:1; box-sizing:border-box; padding:6px 8px; font-size:13px;
+                   border:1px solid #ccc; border-radius:3px; outline:none; font-family:inherit;"
+            placeholder="如：work"
+            value="${escapeHtml(defaultValue)}">
+          <button id="dpg-suffix-toggle" type="button"
+            style="width:auto; padding:5px 10px; border:1px solid #ccc; border-radius:3px;
+                   background:#fff; color:#222; cursor:pointer; font-size:12px;">显示</button>
+        </div>
         ${detectedHint}
         <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:12px;">
           <button id="dpg-suffix-cancel" style="padding:5px 12px; border:1px solid #ccc; border-radius:3px;
@@ -171,6 +189,16 @@ const detectedHint =
       document.body.appendChild(overlay);
 
       const input = document.getElementById("dpg-suffix-input");
+      const toggle = document.getElementById("dpg-suffix-toggle");
+      toggle.addEventListener("click", () => {
+        if (input.type === "password") {
+          input.type = "text";
+          toggle.textContent = "隐藏";
+        } else {
+          input.type = "password";
+          toggle.textContent = "显示";
+        }
+      });
 
       document.getElementById("dpg-suffix-ok").addEventListener("click", () => {
         const val = input.value.trim();
