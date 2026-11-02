@@ -11,7 +11,7 @@
 
 ## How It Works
 
-The script concatenates **main domain part** + **your secret seed**, hashes with SHA-384, then generates a 12-character password containing uppercase, lowercase, digits, and special characters using rejection sampling and Fisher-Yates shuffle. Same website + same seed = same password — no memorization or storage required.
+The script derives **main domain part**, **your secret seed**, and **account suffix** into a 512-bit keystream via PBKDF2 + HKDF, then generates a 12-character password containing uppercase, lowercase, digits, and special characters using rejection sampling and Fisher-Yates shuffle. Same website + same seed = same password — no memorization or storage required.
 
 ## Installation
 
@@ -33,7 +33,7 @@ Clicking the 🔑 button opens a seed setup dialog. Enter at least 6 characters 
 
 ### Account Suffix
 
-**Shift + click** the 🔑 button to open the suffix input dialog. Add modifiers (like `work`, `personal`) for different accounts on the same domain, and the script will generate different passwords.
+**Shift + click** the 🔑 button to open the suffix input dialog. Add modifiers (like `work`, `personal`) for different accounts on the same domain, and the script will generate different passwords. You can also use a secret word of your own as the suffix — the script never remembers it, so you'll need to type it each time.
 
 ## Contributing
 
